@@ -37,6 +37,15 @@ public class UserController {
     }
 
     /**
+     * 로그아웃
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseMessageDTO> logout() {
+        ResponseMessageDTO response = userService.logout();
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
+    }
+
+    /**
      * 개인정보 조회
      */
     @GetMapping("/profile/detail")
