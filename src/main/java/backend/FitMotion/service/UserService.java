@@ -13,10 +13,8 @@ import backend.FitMotion.repository.UserProfileRepository;
 import backend.FitMotion.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,19 +79,27 @@ public class UserService {
     /**
      * 개인정보 조회
      */
-    public ResponseProfileDTO getUserProfile(String email) {
-        UserProfile userProfile = userProfileRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return ResponseProfileDTO.builder()
-                .userId(userProfile.getUserId())
-                .email(userProfile.getUser().getEmail())
-                .username(userProfile.getUsername())
-                .age(userProfile.getAge())
-                .phone(userProfile.getPhone())
-                .height(userProfile.getHeight())
-                .weight(userProfile.getWeight())
-                .build();
+    @Transactional
+    public ResponseProfileDTO ResponseUserProfile(String email) {
+        try {
+            Optional<UserProfile> userProfileOptional = userProfileRepository.findByUserEmail(email);
+            if(userProfileOptional.isPresent()) {
+                UserProfile _userprofile = userProfileOptional.get();
+                ResponseProfileDTO.userProfile uf = new ResponseProfileDTO.userProfile (
+                        _userprofile.getUserId(),
+                        _userprofile.getUsername(),
+                        _userprofile.getAge(),
+                        _userprofile.getPhone(),
+                        _userprofile.getHeight(),
+                        _userprofile.getWeight()
+                );
+                return new ResponseProfileDTO(200, "유저 조회 성공" ,uf);
+            } else {
+                return new ResponseProfileDTO(500, "유저 조회 실패", null);
+            }
+        } catch (Exception e) {
+            return new ResponseProfileDTO(500, "유저 조회 실패", null);
+        }
     }
 
     /**

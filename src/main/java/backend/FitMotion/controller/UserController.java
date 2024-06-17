@@ -48,11 +48,10 @@ public class UserController {
     /**
      * 개인정보 조회
      */
-    @GetMapping("/profile/detail")
-    public ResponseEntity<ResponseProfileDTO> getUserProfile(Authentication authentication) {
-        String email = authentication.getName(); // 사용자 인증 정보에서 이메일을 가져옴
-        ResponseProfileDTO dto = userService.getUserProfile(email);
-        return ResponseEntity.ok(dto);
+    @GetMapping("/profile/detail/{Email}")
+    public ResponseEntity<ResponseProfileDTO> profileDetail(@PathVariable("Email") String Email){
+        ResponseProfileDTO response = userService.ResponseUserProfile(Email);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     /**
