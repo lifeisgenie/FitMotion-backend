@@ -2,6 +2,7 @@ package backend.FitMotion.service;
 
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.response.ResponseMessageDTO;
+import backend.FitMotion.dto.response.ResponseProfileDTO;
 import backend.FitMotion.entity.User;
 import backend.FitMotion.entity.UserProfile;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
@@ -62,5 +63,23 @@ public class UserService {
         } catch (Exception e) {
             return new ResponseMessageDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "회원 가입 실패");
         }
+    }
+
+    /**
+     * 개인정보 조회
+     */
+    public ResponseProfileDTO getUserProfile(String email) {
+        UserProfile userProfile = userProfileRepository.findByUserEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return ResponseProfileDTO.builder()
+                .userId(userProfile.getUserId())
+                .email(userProfile.getUser().getEmail())
+                .username(userProfile.getUsername())
+                .age(userProfile.getAge())
+                .phone(userProfile.getPhone())
+                .height(userProfile.getHeight())
+                .weight(userProfile.getWeight())
+                .build();
     }
 }
