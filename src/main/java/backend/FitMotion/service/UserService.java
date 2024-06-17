@@ -4,6 +4,7 @@ import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
 import backend.FitMotion.dto.response.ResponseExerciseDetailDTO;
+import backend.FitMotion.dto.response.ResponseExerciseListsDTO;
 import backend.FitMotion.dto.response.ResponseMessageDTO;
 import backend.FitMotion.dto.response.ResponseProfileDTO;
 import backend.FitMotion.entity.Exercise;
@@ -22,7 +23,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -193,6 +196,28 @@ public class UserService {
             }
         } catch (Exception e) {
             return new ResponseExerciseDetailDTO(500, "운동 조회 실패", null);
+        }
+    }
+
+    /**
+     * 운동 리스트 조회
+     */
+    public ResponseExerciseListsDTO getAllExercises() {
+        try {
+            List<Exercise> exercises = exerciseRepository.findAll();
+            List<ResponseExerciseListsDTO.ExerciseInfo> exerciseList = exercises.stream()
+                    .map(exercise -> new ResponseExerciseListsDTO.ExerciseInfo(
+                            exercise.getExerciseName(),
+                            exercise.getExerciseCategory(),
+                            exercise.getExerciseExplain(),
+                            exercise.getExerciseUrl()))
+                    .collect(Collectors.toList());
+
+            ResponseExerciseListsDTO.ExerciseData exerciseData = new ResponseExerciseListsDTO.ExerciseData(exerciseList);
+
+            return new ResponseExerciseListsDTO(200, "운동 리스트 조회 성공", exerciseData);
+        } catch (Exception e) {
+            return new ResponseExerciseListsDTO(500, "운동 리스트 조회 실패", null);
         }
     }
 }

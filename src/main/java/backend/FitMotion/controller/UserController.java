@@ -4,6 +4,7 @@ import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
 import backend.FitMotion.dto.response.ResponseExerciseDetailDTO;
+import backend.FitMotion.dto.response.ResponseExerciseListsDTO;
 import backend.FitMotion.dto.response.ResponseMessageDTO;
 import backend.FitMotion.dto.response.ResponseProfileDTO;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
@@ -92,6 +93,15 @@ public class UserController {
     @GetMapping("/exercise/detail/{exerciseName}")
     public ResponseEntity<ResponseExerciseDetailDTO> getExerciseDetail(@PathVariable String exerciseName) {
         ResponseExerciseDetailDTO response = userService.getExerciseDetail(exerciseName);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    /**
+     * 운동 리스트 조회
+     */
+    @GetMapping("/exercise/list")
+    public ResponseEntity<ResponseExerciseListsDTO> getAllExercises() {
+        ResponseExerciseListsDTO response = userService.getAllExercises();
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }
