@@ -1,5 +1,6 @@
 package backend.FitMotion.controller;
 
+import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
 import backend.FitMotion.dto.response.ResponseMessageDTO;
@@ -58,6 +59,21 @@ public class UserController {
             return new ResponseEntity<>(new ResponseMessageDTO(HttpStatus.NOT_FOUND.value(), "사용자를 찾을 수 없습니다."), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(new ResponseMessageDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "회원 정보 수정 실패"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    @PostMapping("/profile/password")
+    public ResponseEntity<ResponseMessageDTO> changePassword(@RequestBody RequestPasswordDTO dto) {
+        try {
+            userService.changePassword(dto);
+            ResponseMessageDTO response = new ResponseMessageDTO(HttpStatus.OK.value(), "비밀번호가 성공적으로 변경되었습니다.");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ResponseMessageDTO response = new ResponseMessageDTO(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 }
