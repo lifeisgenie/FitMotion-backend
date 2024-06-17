@@ -10,16 +10,13 @@ import backend.FitMotion.repository.UserProfileRepository;
 import backend.FitMotion.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +61,18 @@ public class UserService {
             return new ResponseMessageDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "회원 가입 실패");
         }
     }
+
+    /**
+     * 로그아웃
+     */
+    public ResponseMessageDTO logout() {
+        try {
+            return new ResponseMessageDTO(HttpStatus.OK.value(), "로그아웃 성공");
+        } catch (Exception e) {
+            return new ResponseMessageDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "로그아웃 실패");
+        }
+    }
+
 
     /**
      * 개인정보 조회
