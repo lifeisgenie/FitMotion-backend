@@ -3,12 +3,15 @@ package backend.FitMotion.service;
 import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
+import backend.FitMotion.dto.response.ResponseExerciseDetailDTO;
 import backend.FitMotion.dto.response.ResponseMessageDTO;
 import backend.FitMotion.dto.response.ResponseProfileDTO;
+import backend.FitMotion.entity.Exercise;
 import backend.FitMotion.entity.User;
 import backend.FitMotion.entity.UserProfile;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
 import backend.FitMotion.exception.UserNotFoundException;
+import backend.FitMotion.repository.ExerciseRepository;
 import backend.FitMotion.repository.UserProfileRepository;
 import backend.FitMotion.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final ExerciseRepository exerciseRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     /**
@@ -166,5 +170,29 @@ public class UserService {
 
         user.setPassword(hashedPassword);
         userRepository.save(user);
+    }
+
+    /**
+     * 운동 상세 조회
+     */
+    public ResponseExerciseDetailDTO getExerciseDetail(String exerciseName) {
+        try {
+            Optional<Exercise> exerciseOptional = exerciseRepository.findByExerciseName(exerciseName);
+            if (exerciseOptional.isPresent()) {
+                Exercise exercise = exerciseOptional.get();
+                ResponseExerciseDetailDTO.ExerciseData exerciseData = new ResponseExerciseDetailDTO.ExerciseData(
+                        exercise.getExerciseName(),
+                        exercise.getExerciseCategory(),
+                        exercise.getExerciseExplain(),
+                        exercise.getExerciseUrl()
+                );
+
+                return new ResponseExerciseDetailDTO(200, "운동 상세 조회 성공", exerciseData);
+            } else {
+                return new ResponseExerciseDetailDTO(404, "운동을 찾을 수 없습니다", null);
+            }
+        } catch (Exception e) {
+            return new ResponseExerciseDetailDTO(500, "운동 조회 실패", null);
+        }
     }
 }

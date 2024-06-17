@@ -3,6 +3,7 @@ package backend.FitMotion.controller;
 import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
+import backend.FitMotion.dto.response.ResponseExerciseDetailDTO;
 import backend.FitMotion.dto.response.ResponseMessageDTO;
 import backend.FitMotion.dto.response.ResponseProfileDTO;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
@@ -83,5 +84,14 @@ public class UserController {
             ResponseMessageDTO response = new ResponseMessageDTO(HttpStatus.BAD_REQUEST.value(), e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    /**
+     * 운동 상세 조회
+     */
+    @GetMapping("/exercise/detail/{exerciseName}")
+    public ResponseEntity<ResponseExerciseDetailDTO> getExerciseDetail(@PathVariable String exerciseName) {
+        ResponseExerciseDetailDTO response = userService.getExerciseDetail(exerciseName);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }
