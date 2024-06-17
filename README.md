@@ -1,1 +1,1 @@
-# FitMotion-backend
+# 사용자 운동 모션 인식 피드백 서비스
