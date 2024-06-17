@@ -1,8 +1,6 @@
 package backend.FitMotion.controller;
 
-import backend.FitMotion.dto.request.RequestPasswordDTO;
-import backend.FitMotion.dto.request.RequestSignUpDTO;
-import backend.FitMotion.dto.request.RequestUpdateDTO;
+import backend.FitMotion.dto.request.*;
 import backend.FitMotion.dto.response.*;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
 import backend.FitMotion.exception.UserNotFoundException;
@@ -90,8 +88,8 @@ public class UserController {
      * 운동 상세 조회
      */
     @GetMapping("/exercise/detail/{exerciseName}")
-    public ResponseEntity<ResponseExerciseDetailDTO> getExerciseDetail(@PathVariable String exerciseName) {
-        ResponseExerciseDetailDTO response = userService.getExerciseDetail(exerciseName);
+    public ResponseEntity<ResponseExerciseDetailDTO> getExerciseDetailByName(@PathVariable String exerciseName) {
+        ResponseExerciseDetailDTO response = userService.getExerciseDetailByName(exerciseName);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -126,7 +124,7 @@ public class UserController {
      * 피드백 리스트 조회
      */
     @GetMapping("/feedback/list/{userId}")
-    public ResponseEntity<ResponseFeedbackListDTO> getFeedbackList(@PathVariable Long userId) {
+    public ResponseEntity<ResponseFeedbackListDTO> getFeedbackList(@PathVariable("userId") Long userId) {
         try {
             List<ResponseFeedbackListDTO.FeedbackInfo> feedbackList = userService.getFeedbackListByUserId(userId);
             ResponseFeedbackListDTO.FeedbackData data = new ResponseFeedbackListDTO.FeedbackData(feedbackList);
@@ -134,6 +132,20 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseFeedbackListDTO(500, "피드백 리스트 조회 실패", null));
+        }
+    }
+
+    /**
+     * 피드백 저장
+     */
+    @PostMapping("/feedback/save")
+    public ResponseEntity<ResponseFeedbackDetailDTO> saveFeedback(@RequestBody RequestFeedbackSaveDTO request) {
+        try {
+            ResponseFeedbackDetailDTO response = userService.saveFeedback(request);
+            return ResponseEntity.status(response.getStatusCode()).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseFeedbackDetailDTO(500, "피드백 저장 실패", null));
         }
     }
 }

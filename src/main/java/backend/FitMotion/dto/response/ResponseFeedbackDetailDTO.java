@@ -2,6 +2,7 @@ package backend.FitMotion.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -14,10 +15,13 @@ public class ResponseFeedbackDetailDTO {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class FeedbackData {
         private Long feedbackId;
-        private Long exerciseId;
+        private String content;
         private String videoUrl;
+        private Long exerciseId;
+        private Long userId;
         private Date createdDate;
     }
 }

@@ -1,5 +1,6 @@
 package backend.FitMotion.service;
 
+import backend.FitMotion.dto.request.RequestFeedbackSaveDTO;
 import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
@@ -9,6 +10,7 @@ import backend.FitMotion.entity.FeedbackFile;
 import backend.FitMotion.entity.User;
 import backend.FitMotion.entity.UserProfile;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
+import backend.FitMotion.exception.ExerciseNotFoundException;
 import backend.FitMotion.exception.UserNotFoundException;
 import backend.FitMotion.repository.ExerciseRepository;
 import backend.FitMotion.repository.FeedbackRepository;
@@ -18,10 +20,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -178,7 +182,7 @@ public class UserService {
     /**
      * 운동 상세 조회
      */
-    public ResponseExerciseDetailDTO getExerciseDetail(String exerciseName) {
+    public ResponseExerciseDetailDTO getExerciseDetailByName(String exerciseName) {
         try {
             Optional<Exercise> exerciseOptional = exerciseRepository.findByExerciseName(exerciseName);
             if (exerciseOptional.isPresent()) {
@@ -189,13 +193,39 @@ public class UserService {
                         exercise.getExerciseExplain(),
                         exercise.getExerciseUrl()
                 );
-
                 return new ResponseExerciseDetailDTO(200, "운동 상세 조회 성공", exerciseData);
             } else {
-                return new ResponseExerciseDetailDTO(404, "운동을 찾을 수 없습니다", null);
+                throw new ExerciseNotFoundException("운동을 찾을 수 없습니다");
             }
+        } catch (ExerciseNotFoundException e) {
+            return new ResponseExerciseDetailDTO(404, e.getMessage(), null);
         } catch (Exception e) {
-            return new ResponseExerciseDetailDTO(500, "운동 조회 실패", null);
+            return new ResponseExerciseDetailDTO(500, "운동 조회 중 오류 발생", null);
+        }
+    }
+
+    /**
+     * 운동 상세 조회 (ID로)
+     */
+    public ResponseExerciseDetailDTO getExerciseDetailById(Long exerciseId) {
+        try {
+            Optional<Exercise> exerciseOptional = exerciseRepository.findById(exerciseId);
+            if (exerciseOptional.isPresent()) {
+                Exercise exercise = exerciseOptional.get();
+                ResponseExerciseDetailDTO.ExerciseData exerciseData = new ResponseExerciseDetailDTO.ExerciseData(
+                        exercise.getExerciseName(),
+                        exercise.getExerciseCategory(),
+                        exercise.getExerciseExplain(),
+                        exercise.getExerciseUrl()
+                );
+                return new ResponseExerciseDetailDTO(200, "운동 상세 조회 성공", exerciseData);
+            } else {
+                throw new ExerciseNotFoundException("운동을 찾을 수 없습니다");
+            }
+        } catch (ExerciseNotFoundException e) {
+            return new ResponseExerciseDetailDTO(404, e.getMessage(), null);
+        } catch (Exception e) {
+            return new ResponseExerciseDetailDTO(500, "운동 조회 중 오류 발생", null);
         }
     }
 
@@ -230,8 +260,10 @@ public class UserService {
             FeedbackFile feedback = feedbackOptional.get();
             ResponseFeedbackDetailDTO.FeedbackData feedbackData = new ResponseFeedbackDetailDTO.FeedbackData(
                     feedback.getFeedbackId(),
-                    feedback.getExercise().getExerciseId(),
+                    feedback.getContent(),
                     feedback.getVideoUrl(),
+                    feedback.getExercise().getExerciseId(),
+                    feedback.getUserProfile().getUserId(),
                     feedback.getCreatedDate()
             );
             return new ResponseFeedbackDetailDTO(200, "피드백 조회 성공", feedbackData);
@@ -246,11 +278,47 @@ public class UserService {
     public List<ResponseFeedbackListDTO.FeedbackInfo> getFeedbackListByUserId(Long userId) {
         List<FeedbackFile> feedbackFiles = feedbackRepository.findByUserId(userId);
         return feedbackFiles.stream()
-                .map(feedback -> new ResponseFeedbackListDTO.FeedbackInfo(
-                        feedback.getFeedbackId(),
-                        feedback.getExercise().getExerciseId(),
-                        feedback.getCreatedDate()
-                ))
+                .map(feedback -> {
+                    ResponseExerciseDetailDTO exerciseDetail = getExerciseDetailById(feedback.getExercise().getExerciseId());
+                    return new ResponseFeedbackListDTO.FeedbackInfo(
+                            feedback.getFeedbackId(),
+                            exerciseDetail,
+                            feedback.getExercise().getExerciseId(),
+                            feedback.getCreatedDate()
+                    );
+                })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 피드백 저장
+     */
+    @Transactional
+    public ResponseFeedbackDetailDTO saveFeedback(RequestFeedbackSaveDTO request) {
+        UserProfile userProfile = userProfileRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        Exercise exercise = exerciseRepository.findById(request.getExerciseId())
+                .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found"));
+
+        FeedbackFile feedbackFile = FeedbackFile.builder()
+                .content(request.getContent())
+                .videoUrl(request.getVideoUrl())
+                .userProfile(userProfile)
+                .exercise(exercise)
+                .createdDate(new Date())
+                .build();
+
+        feedbackRepository.save(feedbackFile);
+
+        ResponseFeedbackDetailDTO.FeedbackData feedbackData = new ResponseFeedbackDetailDTO.FeedbackData(
+                feedbackFile.getFeedbackId(),
+                feedbackFile.getContent(),
+                feedbackFile.getVideoUrl(),
+                feedbackFile.getExercise().getExerciseId(),
+                feedbackFile.getUserProfile().getUserId(),
+                feedbackFile.getCreatedDate()
+        );
+
+        return new ResponseFeedbackDetailDTO(200, "피드백 저장 성공", feedbackData);
     }
 }

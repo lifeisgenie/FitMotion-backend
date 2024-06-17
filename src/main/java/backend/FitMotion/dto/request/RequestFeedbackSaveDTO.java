@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestFeedbackDetailDTO {
-    private Long feedbackId;
+public class RequestFeedbackSaveDTO {
+    private String content;
+    private String videoUrl;
+    private Long userId;
+    private Long exerciseId;
 }
