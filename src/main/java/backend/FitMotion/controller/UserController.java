@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -117,6 +119,21 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseFeedbackDetailDTO(500, "피드백 조회 실패", null));
+        }
+    }
+
+    /**
+     * 피드백 리스트 조회
+     */
+    @GetMapping("/feedback/list/{userId}")
+    public ResponseEntity<ResponseFeedbackListDTO> getFeedbackList(@PathVariable Long userId) {
+        try {
+            List<ResponseFeedbackListDTO.FeedbackInfo> feedbackList = userService.getFeedbackListByUserId(userId);
+            ResponseFeedbackListDTO.FeedbackData data = new ResponseFeedbackListDTO.FeedbackData(feedbackList);
+            return ResponseEntity.ok(new ResponseFeedbackListDTO(200, "피드백 리스트 조회 성공", data));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseFeedbackListDTO(500, "피드백 리스트 조회 실패", null));
         }
     }
 }

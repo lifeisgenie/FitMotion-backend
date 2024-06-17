@@ -239,4 +239,18 @@ public class UserService {
             return new ResponseFeedbackDetailDTO(500, "피드백 조회 실패", null);
         }
     }
+
+    /**
+     * 피드백 리스트 조회
+     */
+    public List<ResponseFeedbackListDTO.FeedbackInfo> getFeedbackListByUserId(Long userId) {
+        List<FeedbackFile> feedbackFiles = feedbackRepository.findByUserId(userId);
+        return feedbackFiles.stream()
+                .map(feedback -> new ResponseFeedbackListDTO.FeedbackInfo(
+                        feedback.getFeedbackId(),
+                        feedback.getExercise().getExerciseId(),
+                        feedback.getCreatedDate()
+                ))
+                .collect(Collectors.toList());
+    }
 }
