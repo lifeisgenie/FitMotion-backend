@@ -36,7 +36,7 @@ public class UserController {
     /**
      * 개인정보 조회
      */
-    @GetMapping("/profile/info")
+    @GetMapping("/profile/detail")
     public ResponseEntity<ResponseProfileDTO> getUserProfile(Authentication authentication) {
         String email = authentication.getName(); // 사용자 인증 정보에서 이메일을 가져옴
         ResponseProfileDTO dto = userService.getUserProfile(email);
