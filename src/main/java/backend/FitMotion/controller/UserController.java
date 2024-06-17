@@ -3,10 +3,7 @@ package backend.FitMotion.controller;
 import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
-import backend.FitMotion.dto.response.ResponseExerciseDetailDTO;
-import backend.FitMotion.dto.response.ResponseExerciseListsDTO;
-import backend.FitMotion.dto.response.ResponseMessageDTO;
-import backend.FitMotion.dto.response.ResponseProfileDTO;
+import backend.FitMotion.dto.response.*;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
 import backend.FitMotion.exception.UserNotFoundException;
 import backend.FitMotion.service.UserService;
@@ -103,5 +100,23 @@ public class UserController {
     public ResponseEntity<ResponseExerciseListsDTO> getAllExercises() {
         ResponseExerciseListsDTO response = userService.getAllExercises();
         return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    /**
+     * 피드백 상세 조회
+     */
+    @GetMapping("/feedback/detail/{feedbackId}")
+    public ResponseEntity<ResponseFeedbackDetailDTO> getFeedbackDetail(@PathVariable Long feedbackId) {
+        try {
+            ResponseFeedbackDetailDTO response = userService.getFeedbackDetail(feedbackId);
+            if (response.getStatusCode() == 200) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseFeedbackDetailDTO(500, "피드백 조회 실패", null));
+        }
     }
 }

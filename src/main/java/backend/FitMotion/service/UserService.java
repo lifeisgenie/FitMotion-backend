@@ -3,16 +3,15 @@ package backend.FitMotion.service;
 import backend.FitMotion.dto.request.RequestPasswordDTO;
 import backend.FitMotion.dto.request.RequestSignUpDTO;
 import backend.FitMotion.dto.request.RequestUpdateDTO;
-import backend.FitMotion.dto.response.ResponseExerciseDetailDTO;
-import backend.FitMotion.dto.response.ResponseExerciseListsDTO;
-import backend.FitMotion.dto.response.ResponseMessageDTO;
-import backend.FitMotion.dto.response.ResponseProfileDTO;
+import backend.FitMotion.dto.response.*;
 import backend.FitMotion.entity.Exercise;
+import backend.FitMotion.entity.FeedbackFile;
 import backend.FitMotion.entity.User;
 import backend.FitMotion.entity.UserProfile;
 import backend.FitMotion.exception.EmailAlreadyExistsException;
 import backend.FitMotion.exception.UserNotFoundException;
 import backend.FitMotion.repository.ExerciseRepository;
+import backend.FitMotion.repository.FeedbackRepository;
 import backend.FitMotion.repository.UserProfileRepository;
 import backend.FitMotion.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +33,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final ExerciseRepository exerciseRepository;
+    private final FeedbackRepository feedbackRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     /**
@@ -218,6 +218,25 @@ public class UserService {
             return new ResponseExerciseListsDTO(200, "운동 리스트 조회 성공", exerciseData);
         } catch (Exception e) {
             return new ResponseExerciseListsDTO(500, "운동 리스트 조회 실패", null);
+        }
+    }
+
+    /**
+     * 피드백 상세 조회
+     */
+    public ResponseFeedbackDetailDTO getFeedbackDetail(Long feedbackId) {
+        Optional<FeedbackFile> feedbackOptional = feedbackRepository.findById(feedbackId);
+        if (feedbackOptional.isPresent()) {
+            FeedbackFile feedback = feedbackOptional.get();
+            ResponseFeedbackDetailDTO.FeedbackData feedbackData = new ResponseFeedbackDetailDTO.FeedbackData(
+                    feedback.getFeedbackId(),
+                    feedback.getExercise().getExerciseId(),
+                    feedback.getVideoUrl(),
+                    feedback.getCreatedDate()
+            );
+            return new ResponseFeedbackDetailDTO(200, "피드백 조회 성공", feedbackData);
+        } else {
+            return new ResponseFeedbackDetailDTO(500, "피드백 조회 실패", null);
         }
     }
 }

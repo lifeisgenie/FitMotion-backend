@@ -3,6 +3,8 @@ package backend.FitMotion.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -25,4 +27,6 @@ public class UserProfile {
     private double height;
     private double weight;
 
+    @OneToMany(mappedBy = "userProfile")
+    private List<FeedbackFile> feedbackFiles;
 }
